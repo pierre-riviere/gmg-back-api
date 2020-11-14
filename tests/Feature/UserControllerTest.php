@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 use App\Models\User;
+use App\Models\Task;
 
 class UserControllerTest extends TestCase
 {
@@ -369,6 +370,19 @@ class UserControllerTest extends TestCase
         $response = $this->delete(self::BASE_ROUTE . $user->id);
         $response->assertStatus(200);
         $this->assertDatabaseMissing("users", ["id" => $user->id]);
+    }
+
+    /**
+     * should delete a user with task
+     */
+    public function testShouldDeleteUserWithTask()
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->create(["user_id" => $user->id]);
+        $response = $this->delete(self::BASE_ROUTE . $user->id);
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing("users", ["id" => $user->id]);
+        $this->assertDatabaseMissing("tasks", ["id" => $task->id]);
     }
 
     /**

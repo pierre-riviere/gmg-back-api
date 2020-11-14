@@ -126,7 +126,7 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldFailGfettingTaskWhenGivenInvalidId()
+    public function testShouldFailGetTaskWhenGivenInvalidId()
     {
         $response = $this->get(self::BASE_ROUTE . "1");
         $response->assertStatus(404);
@@ -176,7 +176,7 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailCreatingTaskWhenMissingName()
+    public function testFailCreateTaskWhenMissingName()
     {
         $user = User::factory()->create();
         $createData = [
@@ -200,7 +200,7 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailCreatingTaskWhenMissingDescription()
+    public function testFailCreateTaskWhenMissingDescription()
     {
         $user = User::factory()->create();
         $createData = [
@@ -224,7 +224,7 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailCreatingTaskWhenMissingStatus()
+    public function testFailCreateTaskWhenMissingStatus()
     {
         $user = User::factory()->create();
         $createData = [
@@ -248,7 +248,7 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailCreatingTaskWhenMissingUserId()
+    public function testFailCreateTaskWhenMissingUserId()
     {
         $createData = [
             "name" => "name test",
@@ -271,7 +271,7 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailCreatingTaskWhenGivenInvalidUserId()
+    public function testFailCreateTaskWhenGivenInvalidUserId()
     {
         $createData = [
             "name" => "name test",
@@ -297,6 +297,22 @@ class TaskControllerTest extends TestCase
      */
     public function testShouldUpdateTask()
     {
+        $task = Task::factory()->create();
+
+        $updateData = [
+            "name" => "task name test",
+            "description" => "task desc test",
+            "status" => "task status",
+        ];
+
+        $response = $this->put(self::BASE_ROUTE . $task->id, $updateData);
+        $response->assertStatus(200);
+        $res = $response->json();
+
+        $this->assertEquals("updated_task", $res["code"]);
+        $expectedTask = array_merge($task->toArray(), $updateData);
+        $this->assertTaskEquals($expectedTask, $res["task"]);
+        $this->assertDatabaseHas("tasks", $updateData);
     }
 
     /**
@@ -304,8 +320,16 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailUpdatingTaskWhenWhenGivenInvalidId()
+    public function testFailUpdateTaskWhenGivenInvalidId()
     {
+        $updateData = [
+            "name" => "task name test",
+            "description" => "task desc test",
+            "status" => "task status",
+        ];
+
+        $response = $this->put(self::BASE_ROUTE . "10", $updateData);
+        $response->assertStatus(404);
     }
 
     /**
@@ -313,8 +337,24 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailUpdatingTaskWhenWhenGivenEmptyName()
+    public function testFailUpdateTaskWhenGivenEmptyName()
     {
+        $task = Task::factory()->create();
+
+        $updateData = [
+            "name" => "",
+            "description" => "task desc test",
+            "status" => "task status",
+        ];
+
+        $response = $this->put(self::BASE_ROUTE . $task->id, $updateData);
+
+        $this->assertTaskUpdate(
+            $response,
+            400,
+            "invalid_data",
+            $task->toArray()
+        );
     }
 
     /**
@@ -322,8 +362,24 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailUpdatingTaskWhenWhenGivenEmptyDescription()
+    public function testFailUpdateTaskWhenGivenEmptyDescription()
     {
+        $task = Task::factory()->create();
+
+        $updateData = [
+            "name" => "task name test",
+            "description" => "",
+            "status" => "task status",
+        ];
+
+        $response = $this->put(self::BASE_ROUTE . $task->id, $updateData);
+
+        $this->assertTaskUpdate(
+            $response,
+            400,
+            "invalid_data",
+            $task->toArray()
+        );
     }
 
     /**
@@ -331,8 +387,24 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailUpdatingTaskWhenWhenGivenEmptyStatus()
+    public function testFailUpdateTaskWhenGivenEmptyStatus()
     {
+        $task = Task::factory()->create();
+
+        $updateData = [
+            "name" => "task name test",
+            "description" => "task desc test",
+            "status" => "",
+        ];
+
+        $response = $this->put(self::BASE_ROUTE . $task->id, $updateData);
+
+        $this->assertTaskUpdate(
+            $response,
+            400,
+            "invalid_data",
+            $task->toArray()
+        );
     }
 
     /**
@@ -340,8 +412,25 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailUpdatingTaskWhenWhenGivenInvalidUserId()
+    public function testFailUpdateTaskWhenGivenInvalidUserId()
     {
+        $task = Task::factory()->create();
+
+        $updateData = [
+            "name" => "task name test",
+            "description" => "task desc test",
+            "status" => "task status test",
+            "user_id" => 10,
+        ];
+
+        $response = $this->put(self::BASE_ROUTE . $task->id, $updateData);
+
+        $this->assertTaskUpdate(
+            $response,
+            400,
+            "invalid_data",
+            $task->toArray()
+        );
     }
 
     /**
@@ -351,6 +440,10 @@ class TaskControllerTest extends TestCase
      */
     public function testDeleteTask()
     {
+        $task = Task::factory()->create();
+        $response = $this->delete(self::BASE_ROUTE . $task->id);
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing("tasks", ["id" => $task->id]);
     }
 
     /**
@@ -358,7 +451,11 @@ class TaskControllerTest extends TestCase
      *
      * @return void
      */
-    public function testFailDeltingTaskWhenInvalidId()
+    public function testFailDeleteTaskWhenInvalidId()
     {
+        $task = Task::factory()->create();
+        $response = $this->delete(self::BASE_ROUTE . "10");
+        $response->assertStatus(404);
+        $this->assertDatabaseHas("tasks", ["id" => $task->id]);
     }
 }
