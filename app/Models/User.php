@@ -24,4 +24,12 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [];
+
+    /**
+     * get user tasks
+     */
+    public function tasks()
+    {
+        return $this->hasMany("App\Models\Task");
+    }
 }

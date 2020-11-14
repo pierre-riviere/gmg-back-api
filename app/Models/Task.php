@@ -9,5 +9,13 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["name", "description", "status"];
+    protected $fillable = ["name", "description", "status", "user_id"];
+
+    /**
+     * Get the task that owns the user
+     */
+    public function user()
+    {
+        return $this->belongsTo("App\Models\User", "foreign_key");
+    }
 }
