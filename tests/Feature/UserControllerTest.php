@@ -101,7 +101,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldFailGettingUserWhenGivenInvalidId()
+    public function testShouldFailGetUserWhenGivenInvalidId()
     {
         $response = $this->get(self::BASE_ROUTE . "1");
         $response->assertStatus(404);
@@ -150,7 +150,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldNotCreateWhenEmptyName()
+    public function testShouldFailCreateUserWhenEmptyName()
     {
         $createData = [
             "firstname" => "John",
@@ -173,7 +173,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldNotCreateWhenEmptyFirstname()
+    public function testShouldFailCreateUserWhenEmptyFirstname()
     {
         $createData = [
             "name" => "Doe",
@@ -196,7 +196,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldNotCreateWhenInvalidEmail()
+    public function testShouldFailCreateUserWhenInvalidEmail()
     {
         $createData = [
             "name" => "Doe",
@@ -245,17 +245,15 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldFailUpdatingUserWhenGivenInvalidId()
+    public function testShouldFailUpdateUserWhenGivenInvalidId()
     {
-        User::factory()->create();
-
         $updateData = [
             "name" => "Updatedname",
             "firstname" => "Updatedfirstname",
             "email" => "updatedemail@mail.com",
         ];
-        $response = $this->post(self::BASE_ROUTE . "0", $updateData);
-        $response->assertStatus(405);
+        $response = $this->put(self::BASE_ROUTE . "10", $updateData);
+        $response->assertStatus(404);
     }
 
     /**
@@ -263,7 +261,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldNotUpdateWhenEmptyName()
+    public function testShouldFailUpdateUserWhenEmptyName()
     {
         $user = User::factory()->create();
 
@@ -288,7 +286,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldNotUpdateWhenEmptyFirstname()
+    public function testShouldFailUpdateWhenEmptyFirstname()
     {
         $user = User::factory()->create();
 
@@ -313,7 +311,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldNotUpdateWhenInvalidEmail()
+    public function testShouldFailUpdateWhenInvalidEmail()
     {
         $user = User::factory()->create();
 
@@ -338,7 +336,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function testShouldNotUpdateWhenExistedEmail()
+    public function testShouldFailUpdateWhenExistedEmail()
     {
         $users = User::factory(2)->create();
         $user0 = $users[0];
@@ -358,5 +356,31 @@ class UserControllerTest extends TestCase
             "existed_email",
             $user0->toArray()
         );
+    }
+
+    /**
+     * should delete a user
+     *
+     * @return void
+     */
+    public function testShouldDeleteUser()
+    {
+        $user = User::factory()->create();
+        $response = $this->delete(self::BASE_ROUTE . $user->id);
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing("users", ["id" => $user->id]);
+    }
+
+    /**
+     * should fail deleting a user when given invalid id
+     *
+     * @return void
+     */
+    public function testShouldFailDeleteUserWhenInvalidId()
+    {
+        $user = User::factory()->create();
+        $response = $this->delete(self::BASE_ROUTE . "10");
+        $response->assertStatus(404);
+        $this->assertDatabaseHas("users", ["id" => $user->id]);
     }
 }
