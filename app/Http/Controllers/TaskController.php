@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Task;
+use App\Models\User;
 use Exception;
+use Throwable;
 use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
@@ -28,15 +30,8 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         try {
-            $rules = [
-                "name" => ["required", "max:255"],
-                "description" => ["required", "max:255"],
-                "status" => ["required", "max:255"],
-                "user_id" => ["required", "exists:users,id"],
-            ];
-
             // validate request input
-            $validator = Validator::make($request->all(), $rules);
+            $validator = Validator::make($request->all(), Task::rulesStore);
 
             if ($validator->fails()) {
                 return response()->json(
@@ -49,7 +44,7 @@ class TaskController extends Controller
             }
 
             // validate request input
-            $validator = Validator::make($request->all(), $rules);
+            $validator = Validator::make($request->all(), Task::rulesStore);
 
             return response()->json(
                 [
@@ -87,16 +82,8 @@ class TaskController extends Controller
     public function update(Request $request, Task $task)
     {
         try {
-            // rules for user input validation
-            $rules = [
-                "name" => ["filled", "max:255"],
-                "description" => ["filled", "max:255"],
-                "status" => ["filled", "max:255"],
-                "user_id" => ["filled", "exists:users,id"],
-            ];
-
             // validate request input
-            $validator = Validator::make($request->all(), $rules);
+            $validator = Validator::make($request->all(), Task::rulesUpdate);
 
             if ($validator->fails()) {
                 return response()->json(
@@ -136,5 +123,154 @@ class TaskController extends Controller
             "code" => "deleted_task",
             "task" => $task,
         ];
+    }
+
+    /**
+     * get tasks by userId
+     *
+     * @param  \Illuminate\Http\Request
+     * @return \Illuminate\Http\Response
+     */
+    public function list(Request $request)
+    {
+        try {
+            $userId = $request->input("userId");
+            if (!isset($userId)) {
+                return [];
+            }
+            $user = User::find($userId);
+            return $user ? $user->tasks->toArray() : [];
+        } catch (Exception $err) {
+            return response()->json([
+                "code" => "error_tasks_list",
+                "error" => $err->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * store tasks for a specified user
+     *
+     * @param  \Illuminate\Http\Request
+     * @param User $user
+     * @return \Illuminate\Http\Response
+     */
+    public function storeTasks(Request $request, User $user)
+    {
+        try {
+            $tasks = $request->input("tasks");
+            $tasksObj = [];
+
+            foreach ($tasks as $task) {
+                $task["user_id"] = $user->id;
+
+                $validator = Validator::make($task, Task::rulesStore);
+
+                if ($validator->fails()) {
+                    return response()->json(
+                        [
+                            "code" => "invalid_data",
+                            "error" => $validator->errors()->all(),
+                        ],
+                        400
+                    );
+                }
+
+                $tasksObj[] = new Task($task);
+            }
+
+            $user->tasks()->saveMany($tasksObj);
+
+            return $tasksObj;
+        } catch (Exception $err) {
+            return response()->json([
+                "code" => "error_store_tasks",
+                "error" => $err->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * update tasks for a specified user
+     *
+     * @param  \Illuminate\Http\Request
+     * @param User $user
+     * @return \Illuminate\Http\Response
+     */
+    public function updateTasks(Request $request, User $user)
+    {
+        try {
+            $tasks = $request->input("tasks");
+            $tasksObj = [];
+
+            // validate tasks before updating
+            foreach ($tasks as $task) {
+                $task["user_id"] = $user->id;
+
+                $rules = Task::rulesUpdate;
+                $rules["id"] = ["required", "max:255"];
+                $validator = Validator::make($task, $rules);
+
+                if ($validator->fails()) {
+                    return response()->json(
+                        [
+                            "code" => "invalid_data",
+                            "error" => $validator->errors()->all(),
+                        ],
+                        400
+                    );
+                }
+
+                // check if the task belongs to the current user
+                if (
+                    Task::where("id", $task["id"])
+                        ->where("user_id", $user->id)
+                        ->exists()
+                ) {
+                    $tasksObj[] = $task;
+                }
+            }
+
+            // update tasks
+            foreach ($tasksObj as $task) {
+                Task::find($task["id"])->update($task);
+            }
+
+            return $tasksObj;
+        } catch (Exception $err) {
+            return response()->json([
+                "code" => "error_update_tasks",
+                "error" => $err->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * delete tasks for a specified user
+     *
+     * @param  \Illuminate\Http\Request
+     * @param User $user
+     * @return \Illuminate\Http\Response
+     */
+    public function deleteTasks(Request $request, User $user)
+    {
+        try {
+            $tasks = $request->input("tasks", []);
+
+            $user
+                ->tasks()
+                ->whereIn("id", $tasks)
+                ->delete();
+
+            return [
+                "code" => "deleted_tasks",
+                "tasks" => $tasks,
+            ];
+        } catch (Throwable $err) {
+            return response()->json([
+                "code" => "error_delete_tasks",
+                "error" => $err->getMessage(),
+            ]);
+        }
     }
 }

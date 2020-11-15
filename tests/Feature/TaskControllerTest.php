@@ -13,6 +13,7 @@ class TaskControllerTest extends TestCase
     use RefreshDatabase;
 
     private const BASE_ROUTE = "/api/tasks/";
+    private const BASE_ROUTE_USERS = "/api/users/";
 
     /**
      * Test Task properties
@@ -106,7 +107,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should get task by id
-     *
+     * @group get_task
      * @return void
      */
     public function testShouldGetTask()
@@ -123,7 +124,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail getting task when given invalid id
-     *
+     * @group get_task
      * @return void
      */
     public function testShouldFailGetTaskWhenGivenInvalidId()
@@ -134,7 +135,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should get all tasks
-     *
+     * @group get_task
      * @return void
      */
     public function testShouldGetAllTasks()
@@ -152,7 +153,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should create task
-     *
+     * @group create_task
      * @return void
      */
     public function testShouldCreateTask()
@@ -173,7 +174,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail creating a task when missing name
-     *
+     * @group create_task
      * @return void
      */
     public function testFailCreateTaskWhenMissingName()
@@ -197,7 +198,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail creating a task when missing description
-     *
+     * @group create_task
      * @return void
      */
     public function testFailCreateTaskWhenMissingDescription()
@@ -221,7 +222,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail creating a task when missing status
-     *
+     * @group create_task
      * @return void
      */
     public function testFailCreateTaskWhenMissingStatus()
@@ -245,7 +246,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail creating a task when missing user_id
-     *
+     * @group create_task
      * @return void
      */
     public function testFailCreateTaskWhenMissingUserId()
@@ -268,7 +269,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail creating a task when given invalid user_id
-     *
+     * @group create_task
      * @return void
      */
     public function testFailCreateTaskWhenGivenInvalidUserId()
@@ -292,7 +293,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should update a task
-     *
+     * @group update_task
      * @return void
      */
     public function testShouldUpdateTask()
@@ -317,7 +318,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail updating a task when given invalid id
-     *
+     * @group update_task
      * @return void
      */
     public function testFailUpdateTaskWhenGivenInvalidId()
@@ -334,7 +335,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail updating a task when given empty name
-     *
+     * @group update_task
      * @return void
      */
     public function testFailUpdateTaskWhenGivenEmptyName()
@@ -359,7 +360,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail updating a task when given empty description
-     *
+     * @group update_task
      * @return void
      */
     public function testFailUpdateTaskWhenGivenEmptyDescription()
@@ -384,7 +385,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail updating a task when given empty status
-     *
+     * @group update_task
      * @return void
      */
     public function testFailUpdateTaskWhenGivenEmptyStatus()
@@ -409,7 +410,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail updating a task when given invalid user_id
-     *
+     * @group update_task
      * @return void
      */
     public function testFailUpdateTaskWhenGivenInvalidUserId()
@@ -435,7 +436,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should delete a task
-     *
+     * @group delete_task
      * @return void
      */
     public function testDeleteTask()
@@ -448,7 +449,7 @@ class TaskControllerTest extends TestCase
 
     /**
      * should fail deleting a task when given invalid id
-     *
+     * @group delete_task
      * @return void
      */
     public function testFailDeleteTaskWhenInvalidId()
@@ -457,5 +458,408 @@ class TaskControllerTest extends TestCase
         $response = $this->delete(self::BASE_ROUTE . "10");
         $response->assertStatus(404);
         $this->assertDatabaseHas("tasks", ["id" => $task->id]);
+    }
+
+    /**
+     * should get tasks of a specified user
+     * @group list_tasks
+     * @return void
+     */
+    public function testShouldGetTasksByUser()
+    {
+        $tasks = Task::factory(3)->create();
+        $task = $tasks[1];
+        $response = $this->get(
+            self::BASE_ROUTE . "list?userId=" . $task->user_id
+        );
+        $response->assertStatus(200);
+        $res = $response->json();
+        $expectedRes = [$task->toArray()];
+        $this->assertEquals($expectedRes, $res);
+    }
+
+    /**
+     * should get none task of a user which doesn't have task
+     * @group list_tasks
+     * @return void
+     */
+    public function testShouldGetNoneTaskForUserWithoutTask()
+    {
+        $user = User::factory()->create();
+        $response = $this->get(self::BASE_ROUTE . "list?userId=" . $user->id);
+        $response->assertStatus(200);
+        $res = $response->json();
+        $this->assertEquals([], $res);
+    }
+
+    /**
+     * should get none task of a not existed user
+     * @group list_tasks
+     * @return void
+     */
+    public function testShouldGetNoneTaskWhenGivenNotExistedUser()
+    {
+        $userId = "10";
+        $response = $this->get(self::BASE_ROUTE . "list?userId=" . $userId);
+        $response->assertStatus(200);
+        $res = $response->json();
+        $this->assertEquals([], $res);
+    }
+
+    /**
+     * should store tasks for a specified user
+     * @group list_tasks
+     * @return void
+     */
+    public function testShouldStoreUserTasks()
+    {
+        $users = User::factory(3)->create();
+        $user = $users[1];
+        $tasks = [
+            [
+                "name" => "task name 1",
+                "description" => "task desc 1",
+                "status" => "task status 1",
+            ],
+            [
+                "name" => "task name 2",
+                "description" => "task desc 2",
+                "status" => "task status 2",
+            ],
+            [
+                "name" => "task name 3",
+                "description" => "task desc 3",
+                "status" => "task status 3",
+            ],
+        ];
+
+        $createData["tasks"] = $tasks;
+        $response = $this->post(
+            self::BASE_ROUTE_USERS . "$user->id/tasks",
+            $createData
+        );
+        $response->assertStatus(200);
+        $res = $response->json();
+
+        foreach ($res as $key => $task) {
+            $expectedTask = $tasks[$key];
+            $this->assertEquals($expectedTask["name"], $task["name"]);
+            $this->assertEquals(
+                $expectedTask["description"],
+                $task["description"]
+            );
+            $this->assertEquals($expectedTask["status"], $task["status"]);
+            $this->assertEquals($user->id, $task["user_id"]);
+            $this->assertNotEmpty($task["created_at"]);
+            $this->assertNotEmpty($task["updated_at"]);
+        }
+
+        foreach ($tasks as $task) {
+            $task["user_id"] = $user->id;
+            $this->assertDatabaseHas("tasks", $task);
+        }
+    }
+
+    /**
+     * should fail store tasks for a specified user when given invalid task
+     * @group list_tasks
+     * @return void
+     */
+    public function testShouldFailStoreUserTasksWhenGivenInvalidTask()
+    {
+        $users = User::factory(3)->create();
+        $user = $users[1];
+        $userId = $user->id;
+
+        // invalid task #2 : missing task name
+        $tasks = [
+            [
+                "name" => "task name 1",
+                "description" => "task desc 1",
+                "status" => "task status 1",
+            ],
+            [
+                "description" => "task desc 2",
+                "status" => "task status 2",
+            ],
+            [
+                "name" => "task name 3",
+                "description" => "task desc 3",
+                "status" => "task status 3",
+            ],
+        ];
+
+        $createData["tasks"] = $tasks;
+        $response = $this->post(
+            self::BASE_ROUTE_USERS . "$userId/tasks",
+            $createData
+        );
+        $response->assertStatus(400);
+
+        foreach ($tasks as $task) {
+            $task["user_id"] = $userId;
+            $this->assertDatabaseMissing("tasks", $task);
+        }
+
+        $this->assertDatabaseMissing("tasks", ["user_id" => $userId]);
+    }
+
+    /**
+     * should fail store tasks for a specified user when given invalid user
+     * @group list_tasks
+     * @return void
+     */
+    public function testShouldFailStoreUserTasksWhenGivenInvalidUser()
+    {
+        $invalidUserId = "10";
+
+        // invalid task #2 : missing task name
+        $tasks = [
+            [
+                "name" => "task name 1",
+                "description" => "task desc 1",
+                "status" => "task status 1",
+            ],
+            [
+                "description" => "task desc 2",
+                "status" => "task status 2",
+            ],
+            [
+                "name" => "task name 3",
+                "description" => "task desc 3",
+                "status" => "task status 3",
+            ],
+        ];
+
+        $createData["tasks"] = $tasks;
+        $response = $this->post(
+            self::BASE_ROUTE_USERS . "$invalidUserId/tasks",
+            $createData
+        );
+        $response->assertStatus(404);
+
+        foreach ($tasks as $task) {
+            $task["user_id"] = $invalidUserId;
+            $this->assertDatabaseMissing("tasks", $task);
+        }
+    }
+
+    /**
+     * should update specified user tasks
+     * @group update_user_tasks
+     * @return void
+     */
+    public function testShouldUpdateUserTasks()
+    {
+        $users = User::factory(3)->create();
+        $user = $users[1];
+        $userId = $user->id;
+
+        $tasks = Task::factory(3)->create(["user_id" => $userId]);
+
+        $updateTasks = [
+            [
+                "id" => $tasks[0]->id,
+                "name" => "task name 1",
+                "description" => "task desc 1",
+                "status" => "task status 1",
+            ],
+            [
+                "id" => $tasks[1]->id,
+                "name" => "task name 2",
+                "description" => "task desc 2",
+                "status" => "task status 2",
+            ],
+            [
+                "id" => $tasks[2]->id,
+                "name" => "task name 3",
+                "description" => "task desc 3",
+                "status" => "task status 3",
+            ],
+        ];
+
+        $createData["tasks"] = $updateTasks;
+        $response = $this->put(
+            self::BASE_ROUTE_USERS . "$userId/tasks",
+            $createData
+        );
+        $response->assertStatus(200);
+        $res = $response->json();
+
+        $expectedTasks = array_map(function ($task) use ($userId) {
+            $task["user_id"] = $userId;
+            return $task;
+        }, $updateTasks);
+
+        $this->assertEquals($expectedTasks, $res);
+
+        foreach ($expectedTasks as $task) {
+            $this->assertDatabaseHas("tasks", $task);
+        }
+    }
+
+    /**
+     * should fail update specified user tasks when given invalid user
+     * @group update_user_tasks
+     * @return void
+     */
+    public function testShouldFailUpdateUserTasksWhenGivenInvalidUser()
+    {
+        // invalid user id (not existed)
+        $userId = "10";
+
+        $updateTasks = [
+            [
+                "id" => 1,
+                "name" => "task name 1",
+                "description" => "task desc 1",
+                "status" => "task status 1",
+            ],
+            [
+                "id" => 2,
+                "name" => "task name 2",
+                "description" => "task desc 2",
+                "status" => "task status 2",
+            ],
+            [
+                "id" => 3,
+                "name" => "task name 3",
+                "description" => "task desc 3",
+                "status" => "task status 3",
+            ],
+        ];
+
+        $createData["tasks"] = $updateTasks;
+        $response = $this->put(
+            self::BASE_ROUTE_USERS . "$userId/tasks",
+            $createData
+        );
+        $response->assertStatus(404);
+
+        foreach ($updateTasks as $task) {
+            $task["user_id"] = $userId;
+            $this->assertDatabaseMissing("tasks", $task);
+        }
+    }
+
+    /**
+     * should fail update specified user tasks when given invalid tasks
+     * @group update_user_tasks
+     * @return void
+     */
+    public function testShouldFailUpdateUserTasksWhenGivenInvalidTasks()
+    {
+        $users = User::factory(3)->create();
+        $user = $users[1];
+        $userId = $user->id;
+        $tasks = Task::factory(3)->create(["user_id" => $userId]);
+
+        // invalid task #2 : empty name
+        $updateTasks = [
+            [
+                "id" => $userId,
+                "name" => "task name 1",
+                "description" => "task desc 1",
+                "status" => "task status 1",
+            ],
+            [
+                "id" => $userId,
+                "name" => "",
+                "description" => "task desc 2",
+                "status" => "task status 2",
+            ],
+            [
+                "id" => $userId,
+                "name" => "task name 3",
+                "description" => "task desc 3",
+                "status" => "task status 3",
+            ],
+        ];
+
+        $createData["tasks"] = $updateTasks;
+        $response = $this->put(
+            self::BASE_ROUTE_USERS . "$userId/tasks",
+            $createData
+        );
+        $response->assertStatus(400);
+
+        foreach ($updateTasks as $task) {
+            $task["user_id"] = $userId;
+            $this->assertDatabaseMissing("tasks", $task);
+        }
+
+        foreach ($tasks as $task) {
+            $this->assertDatabaseHas("tasks", $task->toArray());
+        }
+    }
+
+    /**
+     * should delete specified user tasks
+     * @group delete_user_tasks
+     * @return void
+     */
+    public function testShouldDeleteUserTasks()
+    {
+        $users = User::factory(3)->create();
+        $user = $users[1];
+        $userId = $user->id;
+
+        $tasks = Task::factory(5)->create(["user_id" => $userId]);
+
+        $taskIds = $tasks->reduce(function ($memo, $task) {
+            $memo[] = $task->id;
+            return $memo;
+        }, []);
+
+        $deleteTaskIds = [$tasks[1]->id, $tasks[2]->id];
+        $keepTaskIds = array_diff($taskIds, $deleteTaskIds);
+
+        $deleteTasks["tasks"] = $deleteTaskIds;
+
+        $response = $this->delete(
+            self::BASE_ROUTE_USERS . "$userId/tasks",
+            $deleteTasks
+        );
+
+        $response->assertStatus(200);
+        $res = $response->json();
+
+        $expectedRes = [
+            "code" => "deleted_tasks",
+            "tasks" => $deleteTaskIds,
+        ];
+
+        $this->assertEquals($expectedRes, $res);
+
+        foreach ($deleteTaskIds as $taskId) {
+            $this->assertDatabaseMissing("tasks", [
+                "id" => $deleteTaskIds,
+            ]);
+        }
+
+        foreach ($keepTaskIds as $taskId) {
+            $this->assertDatabaseHas("tasks", [
+                "user_id" => $userId,
+                "id" => $taskId,
+            ]);
+        }
+    }
+
+    /**
+     * should fail delete specified user tasks when given invalid user
+     * @group delete_user_tasks
+     * @return void
+     */
+    public function testFailDeleteUserTasksWhenGivenInvalidUser()
+    {
+        $userId = "10";
+        $deleteTasks["tasks"] = [];
+
+        $response = $this->delete(
+            self::BASE_ROUTE_USERS . "$userId/tasks",
+            $deleteTasks
+        );
+
+        $response->assertStatus(404);
     }
 }

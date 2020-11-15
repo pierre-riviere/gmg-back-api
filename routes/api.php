@@ -16,6 +16,12 @@ use App\Http\Controllers\TaskController;
 |
 */
 
+Route::get("tasks/list", [TaskController::class, "list"]);
+
+Route::post("users/{user}/tasks", [TaskController::class, "storeTasks"]);
+Route::put("users/{user}/tasks", [TaskController::class, "updateTasks"]);
+Route::delete("users/{user}/tasks", [TaskController::class, "deleteTasks"]);
+
 Route::resources([
     "users" => UserController::class,
     "tasks" => TaskController::class,
