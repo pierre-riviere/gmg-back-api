@@ -20,7 +20,7 @@ Route::get("tasks/list", [TaskController::class, "list"]);
 
 Route::post("users/{user}/tasks", [TaskController::class, "storeTasks"]);
 Route::put("users/{user}/tasks", [TaskController::class, "updateTasks"]);
-Route::delete("users/{user}/tasks", [TaskController::class, "deleteTasks"]);
+Route::post("users/{user}/deleteTasks", [TaskController::class, "deleteTasks"]);
 
 Route::resources([
     "users" => UserController::class,

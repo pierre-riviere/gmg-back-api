@@ -816,8 +816,8 @@ class TaskControllerTest extends TestCase
 
         $deleteTasks["tasks"] = $deleteTaskIds;
 
-        $response = $this->delete(
-            self::BASE_ROUTE_USERS . "$userId/tasks",
+        $response = $this->post(
+            self::BASE_ROUTE_USERS . "$userId/deleteTasks",
             $deleteTasks
         );
 
@@ -855,8 +855,8 @@ class TaskControllerTest extends TestCase
         $userId = "10";
         $deleteTasks["tasks"] = [];
 
-        $response = $this->delete(
-            self::BASE_ROUTE_USERS . "$userId/tasks",
+        $response = $this->post(
+            self::BASE_ROUTE_USERS . "$userId/deleteTasks",
             $deleteTasks
         );
 
