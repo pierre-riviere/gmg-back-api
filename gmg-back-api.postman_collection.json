@@ -1,0 +1,303 @@
+{
+	"variables": [],
+	"info": {
+		"name": "gmg-back-api",
+		"_postman_id": "fd5e019b-48aa-4bab-d9ac-dea16aa89244",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "users",
+			"description": "",
+			"item": [
+				{
+					"name": "create user",
+					"request": {
+						"url": "http://localhost:8000/api/users",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstname\": \"Pierre\",\n\t\"name\": \"Riviere\",\n\t\"email\": \"priviere...@mail.com\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "get user by id",
+					"request": {
+						"url": "http://localhost:8000/api/users/3",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstname\": \"Pierre\",\n\t\"name\": \"Rivière\",\n\t\"email\": \"priviere@mail.com\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "get all users",
+					"request": {
+						"url": "http://localhost:8000/api/users",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstname\": \"Pierre\",\n\t\"name\": \"Rivière\",\n\t\"email\": \"priviere@mail.com\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "update user",
+					"request": {
+						"url": "http://localhost:8000/api/users/7",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstname\": \"Jack\",\n\t\"email\": \"pauloail.com\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "delete user by id",
+					"request": {
+						"url": "http://localhost:8000/api/users/20",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "tasks",
+			"description": "",
+			"item": [
+				{
+					"name": "create task",
+					"request": {
+						"url": "http://localhost:8000/api/tasks",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"task 2\",\n\t\"description\": \"desc task 2\",\n\t\"status\": \"2\",\n\t\"user_id\": 7\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "get all tasks",
+					"request": {
+						"url": "http://localhost:8000/api/tasks",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstname\": \"Pierre\",\n\t\"name\": \"Rivière\",\n\t\"email\": \"priviere@mail.com\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "get task by id",
+					"request": {
+						"url": "http://localhost:8000/api/tasks/20",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstname\": \"Pierre\",\n\t\"name\": \"Rivière\",\n\t\"email\": \"priviere@mail.com\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "update task",
+					"request": {
+						"url": "http://localhost:8000/api/tasks/6",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Task force 2\",\n\t\"description\": \"Task description updated 2\",\n\t\"status\": \"status updated\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "delete task by id",
+					"request": {
+						"url": "http://localhost:8000/api/tasks/1",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create tasks by user id",
+					"request": {
+						"url": "http://localhost:8000/api/users/21/tasks",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"tasks\": [\n\t\t{\n\t\t\t\"name\": \"task 1\",\n\t\t\t\"description\": \"desc task mul 1\",\n\t\t\t\"status\": \"done\"\n\t\t},\n\t\t{\n\t\t\t\"name\": \"task 2\",\n\t\t\t\"description\": \"desc task mul 2\",\n\t\t\t\"status\": \"pending\"\n\t\t}\n\t]\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "edit tasks by user id",
+					"request": {
+						"url": "http://localhost:8000/api/users/7/tasks",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"tasks\": [\n\t\t{\n\t\t\t\"id\": \"20\",\n\t\t\t\"name\": \"task mul marre 23\",\n\t\t\t\"description\": \"desc task mul 1\",\n\t\t\t\"status\": \"a\"\n\t\t},\n\t\t{\n\t\t\t\"id\": \"21\",\n\t\t\t\"name\": \"task mul marre 10\",\n\t\t\t\"description\": \"desc task mul 1\",\n\t\t\t\"status\": \"a\"\n\t\t}\n\t]\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "delete tasks for a user",
+					"request": {
+						"url": "http://localhost:8000/api/users/21/deleteTasks",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"tasks\": []\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "get tasks by userId",
+					"request": {
+						"url": "http://localhost:8000/api/tasks",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstname\": \"Pierre\",\n\t\"name\": \"Rivière\",\n\t\"email\": \"priviere@mail.com\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
